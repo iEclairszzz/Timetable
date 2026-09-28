@@ -1,0 +1,105 @@
+teacher_name,theory_subject,theory_class,theory_hours,practical_subject,practical_batch,practical_hours,total_load
+Dr. A. G. Phakatkar,DS,SE-2,3,DSL,SE-2 (H2),4,7
+Dr. A. S. Ghotkar,DM,SE-1,3,,,0,3
+Dr. G. V. Kale,DM,SE-3,3,,,0,3
+Dr. K. C. Waghmare,DS,SE-4,3,DSL,SE-1 (F1),4,11
+Dr. K. C. Waghmare,,,0,DSL,SE-3 (F3),4,11
+Dr. P. R. Patil,DS,SE-3,3,,,0,3
+Dr. S. A. Joshi,DS,SE-1,3,DSL,SE-4 (G4),4,7
+Dr. S. N. Girme,COA,SE-1,3,COAL,SE-1 (E1),2,9
+Dr. S. N. Girme,,,0,COAL,SE-2 (E2),2,9
+Dr. S. N. Girme,,,0,COAL,SE-3 (F3),2,9
+Dr. S. S. Sonawane,DM,SE-2,3,,,0,3
+Dr. Sheetal Sonawane,,,0,DSL,SE-4 (F4),4,4
+Prof. A. A. Chandorkar,MDM,SE-3,2,MDM TUT,SE-1 (E1),1,8
+Prof. A. A. Chandorkar,,,0,MDM TUT,SE-2 (E2),1,8
+Prof. A. A. Chandorkar,,,0,MDM TUT,SE-2 (F2),1,8
+Prof. A. A. Chandorkar,,,0,MDM TUT,SE-3 (G3),1,8
+Prof. A. A. Chandorkar,,,0,MDM TUT,SE-3 (H3),1,8
+Prof. A. A. Chandorkar,,,0,MDM TUT,SE-4 (F4),1,8
+Prof. A. D. Bundele,,,0,COAL,SE-3 (G3),2,6
+Prof. A. D. Bundele,,,0,COAL,SE-4 (E4),2,6
+Prof. A. D. Bundele,,,0,COAL,SE-4 (H4),2,6
+Prof. B. P. Masram,,,0,CEP,SE-1 (F1),2,2
+Prof. D. D. Raigar,COA,SE-2,3,COAL,SE-1 (G1),2,15
+Prof. D. D. Raigar,,,0,CEP,SE-1 (H1),2,15
+Prof. D. D. Raigar,,,0,COAL,SE-2 (F2),2,15
+Prof. D. D. Raigar,,,0,COAL,SE-2 (G2),2,15
+Prof. D. D. Raigar,,,0,COAL,SE-4 (G4),2,15
+Prof. D. D. Raigar,,,0,CEP,SE-4 (F4),2,15
+Prof. H. Khan,,,0,PDCR,SE-1 (F1),2,4
+Prof. H. Khan,,,0,PDCR,SE-4 (F4),2,4
+Prof. Jayshree Mahajan,UHV,SE-2,2,FLS,SE-2 (F2),2,12
+Prof. Jayshree Mahajan,UHV,SE-4,2,PDCR,SE-3 (F3),2,12
+Prof. Jayshree Mahajan,,,0,PDCR,SE-3 (G3),2,12
+Prof. Jayshree Mahajan,,,0,FLS,SE-3 (G3),2,12
+Prof. Kopal Gangrade,,,0,CEP,SE-1 (G1),2,10
+Prof. Kopal Gangrade,,,0,PDCR,SE-2 (F2),2,10
+Prof. Kopal Gangrade,,,0,PDCR,SE-2 (H2),2,10
+Prof. Kopal Gangrade,,,0,CEP,SE-2 (G2),2,10
+Prof. Kopal Gangrade,,,0,PDCR,SE-4 (H4),2,10
+Prof. M. Patil,COA,SE-4,3,COAL,SE-2 (H2),2,13
+Prof. M. Patil,,,0,COAL,SE-3 (E3),2,13
+Prof. M. Patil,,,0,CEP,SE-3 (H3),2,13
+Prof. M. Patil,,,0,CEP,SE-4 (E4),2,13
+Prof. M. Patil,,,0,CEP,SE-4 (G4),2,13
+Prof. M. R. Jansari,,,0,DSL,SE-1 (H1),4,6
+Prof. M. R. Jansari,,,0,PDCR,SE-1 (H1),2,6
+Prof. M. S. Chavan,,,0,DSL,SE-4 (E4),4,4
+Prof. M. S. Wakode,,,0,DSL,SE-3 (E3),4,8
+Prof. M. S. Wakode,,,0,DSL,SE-4 (H4),4,8
+Prof. M. V. Mane,MDM,SE-4,2,MDM TUT,SE-1 (H1),1,16
+Prof. M. V. Mane,,,0,CEP,SE-2 (F2),2,16
+Prof. M. V. Mane,,,0,CEP,SE-2 (H2),2,16
+Prof. M. V. Mane,,,0,MDM TUT,SE-2 (G2),1,16
+Prof. M. V. Mane,,,0,MDM TUT,SE-2 (H2),1,16
+Prof. M. V. Mane,,,0,CEP,SE-3 (F3),2,16
+Prof. M. V. Mane,,,0,MDM TUT,SE-3 (E3),1,16
+Prof. M. V. Mane,,,0,MDM TUT,SE-4 (G4),1,16
+Prof. M. V. Mane,,,0,MDM TUT,SE-4 (H4),1,16
+Prof. M. V. Mane,,,0,CEP,SE-4 (H4),2,16
+Prof. P. A. Chavan,EEFM,SE-4,1,FLS,SE-1 (G1),2,7
+Prof. P. A. Chavan,,,0,FLS,SE-4 (E4),2,7
+Prof. P. A. Chavan,,,0,FLS,SE-4 (H4),2,7
+Prof. P. A. Jain,DM,SE-4,3,DSL,SE-1 (G1),4,11
+Prof. P. A. Jain,,,0,DSL,SE-2 (F2),4,11
+Prof. P. J. Jambhulkar,,,0,DSL,SE-2 (E2),4,12
+Prof. P. J. Jambhulkar,,,0,DSL,SE-3 (G3),4,12
+Prof. P. J. Jambhulkar,,,0,PDCR,SE-3 (H3),2,12
+Prof. P. J. Jambhulkar,,,0,PDCR,SE-4 (G4),2,12
+Prof. P. P. Joshi,MDM,SE-2,2,PDCR,SE-2 (E2),2,6
+Prof. P. P. Joshi,,,0,CEP,SE-3 (G3),2,6
+Prof. P. R. Navghare,MDM,SE-1,2,PDCR,SE-1 (G1),2,12
+Prof. P. R. Navghare,,,0,PDCR,SE-3 (E3),2,12
+Prof. P. R. Navghare,,,0,FLS,SE-3 (F3),2,12
+Prof. P. R. Navghare,,,0,FLS,SE-3 (H3),2,12
+Prof. P. R. Navghare,,,0,FLS,SE-4 (G4),2,12
+Prof. P. S. Shanane,EEFM,SE-1,1,,,0,3
+Prof. P. S. Shanane,EEFM,SE-2,1,,,0,3
+Prof. P. S. Shanane,EEFM,SE-3,1,,,0,3
+Prof. R. R. Jadhav,,,0,MDM TUT,SE-1 (F1),1,12
+Prof. R. R. Jadhav,,,0,MDM TUT,SE-1 (G1),1,12
+Prof. R. R. Jadhav,,,0,FLS,SE-1 (F1),2,12
+Prof. R. R. Jadhav,,,0,FLS,SE-2 (E2),2,12
+Prof. R. R. Jadhav,,,0,FLS,SE-2 (G2),2,12
+Prof. R. R. Jadhav,,,0,MDM TUT,SE-3 (F3),1,12
+Prof. R. R. Jadhav,,,0,MDM TUT,SE-4 (E4),1,12
+Prof. R. R. Jadhav,,,0,FLS,SE-4 (F4),2,12
+Prof. R. S. Paswan,COA,SE-3,3,COAL,SE-1 (F1),2,11
+Prof. R. S. Paswan,,,0,COAL,SE-1 (H1),2,11
+Prof. R. S. Paswan,,,0,COAL,SE-3 (H3),2,11
+Prof. R. S. Paswan,,,0,COAL,SE-4 (F4),2,11
+Prof. Rutuja A. Kulkarni,,,0,DSL,SE-1 (E1),4,10
+Prof. Rutuja A. Kulkarni,,,0,CEP,SE-1 (E1),2,10
+Prof. Rutuja A. Kulkarni,,,0,CEP,SE-2 (E2),2,10
+Prof. Rutuja A. Kulkarni,,,0,CEP,SE-3 (E3),2,10
+Prof. S. P. Shintre,,,0,DSL,SE-3 (H3),4,4
+Prof. S. Shah,,,0,PDCR,SE-2 (G2),2,4
+Prof. S. Shah,,,0,PDCR,SE-4 (E4),2,4
+Prof. S. W. Jadhav,UHV,SE-1,2,PDCR,SE-1 (E1),2,16
+Prof. S. W. Jadhav,UHV,SE-3,2,FLS,SE-1 (E1),2,16
+Prof. S. W. Jadhav,,,0,FLS,SE-1 (H1),2,16
+Prof. S. W. Jadhav,,,0,FLS,SE-2 (H2),2,16
+Prof. S. W. Jadhav,,,0,FLS,SE-3 (E3),2,16
+Prof. S. W. Jadhav,,,0,FLS,SE-4 (H4),2,16
+Prof. Y. A. Handge,,,0,DSL,SE-2 (G2),4,4

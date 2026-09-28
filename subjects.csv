@@ -1,0 +1,13 @@
+subject_id,subject_name,subject_code,type,weekly_hours
+S001,Mathematics for Data Modeling,MDM,Theory,2
+S002,Mathematics for Data Modeling Tutorial,MDMT,Theory,1
+S003,Computer Organization and Architecture,COA,Theory,3
+S004,Data Structures,DS,Theory,3
+S005,Universal Human Values,UHV,Theory,2
+S006,Discrete Mathematics,DM,Theory,3
+S007,Economics and Financial Management,EEFM,Theory,1
+S008,Computer Engineering Practice,CEP,Lab,2
+S009,Data Structures Lab,DSL,Lab,4
+S010,Computer Organization and Architecture Lab,COAL,Lab,2
+S011,Fundamentals of Linux Systems Lab,FLS,Lab,2
+S012,Professional Development and Career Readiness,PDCR,Lab,2
