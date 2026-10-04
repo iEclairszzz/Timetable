@@ -24,8 +24,19 @@ Automates the scheduling and predictive allocation of all 12 theory lectures, la
    - Evaluates any subject/class/batch/teacher and predicts optimal conflict-free time slots scored from 0 to 100 based on student fatigue balance, teacher gap minimization, and lab block alignment.
 7. **Department Conflict Auditor**:
    - Real-time constraint validation checking for faculty double-booking, room collisions, break-splitting violations, computer lab capacity (>7), and syllabus deficits.
-8. **Export & Print**:
-   - Export to Excel (.xlsx), CSV, clean printable PDF, and JSON backups.
+8. **Dedicated Search Portal (`search.html`)**:
+   - Universal cross-department search engine opening dedicated results pages instead of in-place filtering.
+   - Searches across Faculty (workload, weekly calendars, free slots), Curriculum Subjects (all 12 subjects across 4 divisions & 16 batches), Divisions & Batches, and Classrooms & Computer Labs.
+   - Deep-linking back into the main timetable grid with one-click return.
+9. **Dynamic Department & Faculty Inputs**:
+   - **Custom Divisions & Batches**: Add new divisions (e.g. SE-5, TE-1), append custom batches, or delete divisions with auto-cleaned schedule references.
+   - **Classrooms & Specialized Labs**: Register lecture classrooms and specialized computer labs with tracking for concurrent lab limits.
+   - **Faculty Management (Manual Entry & Excel Import)**:
+     - Add faculty members manually with designation, max weekly hours quota, and qualified theory/lab subjects.
+     - **Spreadsheet Import**: Drag-and-drop or select any `.xlsx`, `.xls`, or `.csv` file. Real-time preview with row count, status badges, and duplicate updating.
+     - **Template Generator**: One-click download of formatted `Faculty_Roster_Template.xlsx` with official department column headers.
+10. **Export & Print**:
+   - Export multi-sheet Excel workbooks (.xlsx) with schedule, faculty workload, divisions, and rooms, plus CSV, clean printable PDF, and JSON backups.
 
 ---
 

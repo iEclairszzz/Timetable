@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timetableContainer = document.getElementById('timetableContainer');
 
     // Action buttons
+    const btnQuickAddInput = document.getElementById('btnQuickAddInput');
     const btnAutoAllocate = document.getElementById('btnAutoAllocate');
     const btnPredictSlot = document.getElementById('btnPredictSlot');
     const btnManageData = document.getElementById('btnManageData');
@@ -46,6 +47,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnCloseDataModalFooter = document.getElementById('btnCloseDataModalFooter');
     const dataModalTabs = document.querySelectorAll('.modal-tabs .tab-btn');
 
+    // Add Input Modal Elements
+    const modalAddInput = document.getElementById('modalAddInput');
+    const btnCloseAddInput = document.getElementById('btnCloseAddInput');
+    const btnCloseAddInputFooter = document.getElementById('btnCloseAddInputFooter');
+    const addInputTabs = document.querySelectorAll('#addInputTabs .tab-btn');
+    const formModalAddDivision = document.getElementById('formModalAddDivision');
+    const formModalAddBatch = document.getElementById('formModalAddBatch');
+    const formModalAddRoom = document.getElementById('formModalAddRoom');
+    const formSetupAddDivision = document.getElementById('formSetupAddDivision');
+    const formSetupAddRoom = document.getElementById('formSetupAddRoom');
+
+    // Faculty Add & Excel Import Elements
+    const formModalAddTeacher = document.getElementById('formModalAddTeacher');
+    const btnFacultyModeManual = document.getElementById('btnFacultyModeManual');
+    const btnFacultyModeExcel = document.getElementById('btnFacultyModeExcel');
+    const panelTeacherManual = document.getElementById('panelTeacherManual');
+    const panelTeacherExcel = document.getElementById('panelTeacherExcel');
+    const inputTeacherExcelFile = document.getElementById('inputTeacherExcelFile');
+    const teacherExcelDropzone = document.getElementById('teacherExcelDropzone');
+    const excelImportPreviewArea = document.getElementById('excelImportPreviewArea');
+    const excelParsedCount = document.getElementById('excelParsedCount');
+    const tableExcelPreview = document.querySelector('#tableExcelPreview tbody');
+    const chkUpdateExistingTeachers = document.getElementById('chkUpdateExistingTeachers');
+    const btnConfirmExcelImport = document.getElementById('btnConfirmExcelImport');
+    const btnClearExcelImport = document.getElementById('btnClearExcelImport');
+    const btnDownloadTeacherTemplate = document.getElementById('btnDownloadTeacherTemplate');
+    const btnSetupDownloadTeacherTemplate = document.getElementById('btnSetupDownloadTeacherTemplate');
+    const btnSetupOpenAddTeacher = document.getElementById('btnSetupOpenAddTeacher');
+    const btnSetupImportExcel = document.getElementById('btnSetupImportExcel');
+    const selectModalTeacherDesig = document.getElementById('selectModalTeacherDesig');
+    const modalTeacherHours = document.getElementById('modalTeacherHours');
+
+    let currentParsedFacultyList = [];
+
     const modalExport = document.getElementById('modalExport');
     const btnCloseExport = document.getElementById('btnCloseExport');
     const btnCloseExportFooter = document.getElementById('btnCloseExportFooter');
@@ -59,9 +94,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------------------------
     function init() {
         setupEventListeners();
+        handleUrlParams();
         updateToolbarKPIs();
         updateFilterOptions();
         renderActiveView();
+    }
+
+    function handleUrlParams() {
+        const params = new URLSearchParams(window.location.search);
+        const viewParam = params.get('view');
+        const idParam = params.get('id');
+
+        if (viewParam && ['class', 'batch', 'teacher', 'room', 'allocator', 'master', 'audit'].includes(viewParam)) {
+            activeView = viewParam;
+            navButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.view === activeView);
+            });
+            if (idParam) {
+                const decodedId = decodeURIComponent(idParam);
+                if (viewParam === 'teacher') {
+                    const matchT = store.data.teachers.find(t => t.id === decodedId || t.name.toLowerCase() === decodedId.toLowerCase());
+                    selectedFilterId = matchT ? matchT.name : decodedId;
+                } else {
+                    selectedFilterId = decodedId;
+                }
+            }
+        }
+
+        // Open modals from hash if specified
+        if (window.location.hash === '#setup') {
+            renderSetupModalTables();
+            modalData.classList.add('active');
+        } else if (window.location.hash === '#addInput') {
+            openAddInputModal('tabAddDivision');
+        }
     }
 
     // ----------------------------------------------------------------------
@@ -130,10 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         btnDownloadCSV.addEventListener('click', exportCSV);
         btnDownloadJSON.addEventListener('click', exportJSON);
-        btnDownloadExcel.addEventListener('click', () => {
-            showToast("Generating comprehensive Excel schedule...", "success");
-            exportCSV(); // Generates clean spreadsheet format
-        });
+        btnDownloadExcel.addEventListener('click', exportExcel);
         btnPrintModalBtn.addEventListener('click', () => {
             modalExport.classList.remove('active');
             window.print();
@@ -159,17 +222,537 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        // Faculty Search Filter inside Setup Modal
+        // ------------------------------------------------------------------
+        // SEARCH NAVIGATION (ALL search inputs navigate to search.html)
+        // ------------------------------------------------------------------
+        function openSearchPage(rawQuery) {
+            const q = (rawQuery || '').trim();
+            if (q) {
+                window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+            } else {
+                window.location.href = 'search.html';
+            }
+        }
+
+        // 1. Top Header Search Bar
+        const topHeaderSearchForm = document.getElementById('topHeaderSearchForm');
+        const topHeaderSearchInput = document.getElementById('topHeaderSearchInput');
+        if (topHeaderSearchForm) {
+            topHeaderSearchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                openSearchPage(topHeaderSearchInput ? topHeaderSearchInput.value : '');
+            });
+        }
+        if (topHeaderSearchInput) {
+            topHeaderSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    openSearchPage(topHeaderSearchInput.value);
+                }
+            });
+        }
+
+        // 2. Toolbar Global Search Bar
+        const globalSearchForm = document.getElementById('globalSearchForm');
+        const globalSearchInput = document.getElementById('globalSearchInput');
+        if (globalSearchForm) {
+            globalSearchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                openSearchPage(globalSearchInput ? globalSearchInput.value : '');
+            });
+        }
+        if (globalSearchInput) {
+            globalSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    openSearchPage(globalSearchInput.value);
+                }
+            });
+        }
+
+        // 3. Setup Modal Search Input (NEVER filters in place - ALWAYS goes to search.html)
+        const formTeacherSearchModal = document.getElementById('formTeacherSearchModal');
         const searchTeacherInput = document.getElementById('searchTeacherInput');
+        if (formTeacherSearchModal) {
+            formTeacherSearchModal.addEventListener('submit', (e) => {
+                e.preventDefault();
+                openSearchPage(searchTeacherInput ? searchTeacherInput.value : '');
+            });
+        }
         if (searchTeacherInput) {
-            searchTeacherInput.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase();
-                const rows = document.querySelectorAll('#tableTeachers tbody tr');
-                rows.forEach(r => {
-                    const text = r.textContent.toLowerCase();
-                    r.style.display = text.includes(query) ? '' : 'none';
+            searchTeacherInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    openSearchPage(searchTeacherInput.value);
+                }
+            });
+        }
+
+        // ------------------------------------------------------------------
+        // ADD INPUT MODAL LISTENERS (Divisions, Batches, Classrooms)
+        // ------------------------------------------------------------------
+        if (btnQuickAddInput) {
+            btnQuickAddInput.addEventListener('click', () => {
+                openAddInputModal('tabAddDivision');
+            });
+        }
+        if (btnCloseAddInput) {
+            btnCloseAddInput.addEventListener('click', () => modalAddInput.classList.remove('active'));
+        }
+        if (btnCloseAddInputFooter) {
+            btnCloseAddInputFooter.addEventListener('click', () => modalAddInput.classList.remove('active'));
+        }
+
+        // Add Input Modal Tabs
+        addInputTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                addInputTabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const targetId = tab.dataset.tab;
+                document.querySelectorAll('#modalAddInput .tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(targetId)?.classList.add('active');
+                if (targetId === 'tabAddBatch') {
+                    updateModalBatchDivisionSummary();
+                }
+            });
+        });
+
+        // Add Input Form: Division
+        if (formModalAddDivision) {
+            formModalAddDivision.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('modalDivId').value;
+                const name = document.getElementById('modalDivName').value;
+                const customRoom = document.getElementById('inputModalDivClassroomCustom').value.trim();
+                const room = customRoom || document.getElementById('selectModalDivClassroom').value;
+                const batches = document.getElementById('modalDivBatches').value;
+                const cap = document.getElementById('modalDivCapacity').value;
+
+                const res = store.addClass({ id, name, classroom: room, batches, capacity: cap });
+                if (res.success) {
+                    showToast(`Division "${res.class.name}" (${res.class.id}) created with ${res.class.batches.length} batches!`, 'success');
+                    formModalAddDivision.reset();
+                    modalAddInput.classList.remove('active');
+                    selectedFilterId = res.class.id;
+                    updateFilterOptions();
+                    renderActiveView();
+                    renderSetupModalTables();
+                } else {
+                    showToast(res.error, 'error');
+                }
+            });
+        }
+
+        // Add Input Form: Batch
+        const selectModalBatchDivision = document.getElementById('selectModalBatchDivision');
+        if (selectModalBatchDivision) {
+            selectModalBatchDivision.addEventListener('change', updateModalBatchDivisionSummary);
+        }
+
+        if (formModalAddBatch) {
+            formModalAddBatch.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const divId = selectModalBatchDivision.value;
+                const code = document.getElementById('modalBatchCode').value;
+
+                const res = store.addBatchToClass(divId, code);
+                if (res.success) {
+                    showToast(`Batch "${res.batch}" added to division ${divId}!`, 'success');
+                    document.getElementById('modalBatchCode').value = '';
+                    updateModalBatchDivisionSummary();
+                    updateFilterOptions();
+                    renderActiveView();
+                    renderSetupModalTables();
+                } else {
+                    showToast(res.error, 'error');
+                }
+            });
+        }
+
+        // Add Input Form: Classroom / Lab Room
+        if (formModalAddRoom) {
+            formModalAddRoom.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('modalRoomId').value;
+                const name = document.getElementById('modalRoomName').value;
+                const type = document.getElementById('selectModalRoomType').value;
+                const cap = document.getElementById('modalRoomCapacity').value;
+                const isComp = document.getElementById('checkModalRoomIsCompLab').checked;
+
+                const res = store.addRoom({ id, name, type, isComputerLab: isComp, capacity: cap });
+                if (res.success) {
+                    showToast(`Room "${res.room.name}" (${res.room.id}) registered!`, 'success');
+                    formModalAddRoom.reset();
+                    modalAddInput.classList.remove('active');
+                    updateFilterOptions();
+                    renderActiveView();
+                    renderSetupModalTables();
+                } else {
+                    showToast(res.error, 'error');
+                }
+            });
+        }
+
+        // Faculty Mode Switcher in Add Faculty Tab
+        if (btnFacultyModeManual && btnFacultyModeExcel) {
+            btnFacultyModeManual.addEventListener('click', () => {
+                btnFacultyModeManual.classList.add('active');
+                btnFacultyModeExcel.classList.remove('active');
+                if (panelTeacherManual) panelTeacherManual.style.display = 'block';
+                if (panelTeacherExcel) panelTeacherExcel.style.display = 'none';
+            });
+            btnFacultyModeExcel.addEventListener('click', () => {
+                btnFacultyModeExcel.classList.add('active');
+                btnFacultyModeManual.classList.remove('active');
+                if (panelTeacherManual) panelTeacherManual.style.display = 'none';
+                if (panelTeacherExcel) panelTeacherExcel.style.display = 'flex';
+            });
+        }
+
+        // Designation change auto-updates default hours
+        if (selectModalTeacherDesig && modalTeacherHours) {
+            selectModalTeacherDesig.addEventListener('change', () => {
+                const desigId = selectModalTeacherDesig.value;
+                const desig = store.getDesignation(desigId);
+                if (desig) {
+                    modalTeacherHours.value = desig.maxHours;
+                }
+            });
+        }
+
+        // Add Faculty Manual Form Submission
+        if (formModalAddTeacher) {
+            formModalAddTeacher.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('modalTeacherName').value;
+                const id = document.getElementById('modalTeacherId').value;
+                const desigId = selectModalTeacherDesig ? selectModalTeacherDesig.value : 'desig_asst';
+                const maxHours = modalTeacherHours ? modalTeacherHours.value : 18;
+                const theory = document.getElementById('modalTeacherTheory').value;
+                const labs = document.getElementById('modalTeacherLabs').value;
+
+                const res = store.addTeacher({
+                    id,
+                    name,
+                    designationId: desigId,
+                    maxHoursPerWeek: maxHours,
+                    theorySubjects: theory,
+                    labSubjects: labs
+                });
+
+                if (res.success) {
+                    showToast(`Faculty member "${res.teacher.name}" added successfully!`, 'success');
+                    formModalAddTeacher.reset();
+                    if (modalTeacherHours) modalTeacherHours.value = 18;
+                    modalAddInput.classList.remove('active');
+                    updateFilterOptions();
+                    renderActiveView();
+                    renderSetupModalTables();
+                } else {
+                    showToast(res.error, 'error');
+                }
+            });
+        }
+
+        // Download Faculty Template Buttons
+        const triggerDownloadTemplate = () => downloadTeacherTemplate();
+        if (btnDownloadTeacherTemplate) btnDownloadTeacherTemplate.addEventListener('click', triggerDownloadTemplate);
+        if (btnSetupDownloadTeacherTemplate) btnSetupDownloadTeacherTemplate.addEventListener('click', triggerDownloadTemplate);
+
+        // Setup modal faculty quick actions
+        if (btnSetupOpenAddTeacher) {
+            btnSetupOpenAddTeacher.addEventListener('click', () => {
+                modalData.classList.remove('active');
+                openAddInputModal('tabAddTeacher', 'manual');
+            });
+        }
+        if (btnSetupImportExcel) {
+            btnSetupImportExcel.addEventListener('click', () => {
+                modalData.classList.remove('active');
+                openAddInputModal('tabAddTeacher', 'excel');
+            });
+        }
+
+        // Excel File Input & Dropzone
+        if (inputTeacherExcelFile) {
+            inputTeacherExcelFile.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleFacultyFile(e.target.files[0]);
+                }
+            });
+        }
+        if (teacherExcelDropzone) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                teacherExcelDropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    teacherExcelDropzone.classList.add('dragover');
                 });
             });
+            ['dragleave', 'drop'].forEach(eventName => {
+                teacherExcelDropzone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    teacherExcelDropzone.classList.remove('dragover');
+                });
+            });
+            teacherExcelDropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                teacherExcelDropzone.classList.remove('dragover');
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    handleFacultyFile(e.dataTransfer.files[0]);
+                }
+            });
+        }
+
+        // Confirm Excel Import
+        if (btnConfirmExcelImport) {
+            btnConfirmExcelImport.addEventListener('click', () => {
+                if (!currentParsedFacultyList || currentParsedFacultyList.length === 0) {
+                    showToast('No faculty rows to import.', 'error');
+                    return;
+                }
+                const updateExisting = chkUpdateExistingTeachers ? chkUpdateExistingTeachers.checked : true;
+                const res = store.importTeachers(currentParsedFacultyList, { updateExisting });
+                if (res.success) {
+                    showToast(`Processed spreadsheet: ${res.addedCount} new faculty added, ${res.updatedCount} updated, ${res.skippedCount} skipped.`, 'success');
+                    currentParsedFacultyList = [];
+                    if (excelImportPreviewArea) excelImportPreviewArea.style.display = 'none';
+                    if (inputTeacherExcelFile) inputTeacherExcelFile.value = '';
+                    modalAddInput.classList.remove('active');
+                    updateFilterOptions();
+                    renderActiveView();
+                    renderSetupModalTables();
+                } else {
+                    showToast(res.error || 'Failed to import faculty.', 'error');
+                }
+            });
+        }
+
+        // Clear / Cancel Excel Import Preview
+        if (btnClearExcelImport) {
+            btnClearExcelImport.addEventListener('click', () => {
+                currentParsedFacultyList = [];
+                if (excelImportPreviewArea) excelImportPreviewArea.style.display = 'none';
+                if (inputTeacherExcelFile) inputTeacherExcelFile.value = '';
+            });
+        }
+
+        // ------------------------------------------------------------------
+        // SETUP MODAL INLINE FORMS & CRUD DELEGATION
+        // ------------------------------------------------------------------
+        if (formSetupAddDivision) {
+            formSetupAddDivision.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('setupDivId').value;
+                const name = document.getElementById('setupDivName').value;
+                const room = document.getElementById('setupDivRoom').value;
+                const batches = document.getElementById('setupDivBatches').value;
+
+                const res = store.addClass({ id, name, classroom: room, batches });
+                if (res.success) {
+                    showToast(`Division "${res.class.name}" (${res.class.id}) created!`, 'success');
+                    formSetupAddDivision.reset();
+                    renderSetupModalTables();
+                    updateFilterOptions();
+                    renderActiveView();
+                } else {
+                    showToast(res.error, 'error');
+                }
+            });
+        }
+
+        if (formSetupAddRoom) {
+            formSetupAddRoom.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const id = document.getElementById('setupRoomId').value;
+                const name = document.getElementById('setupRoomName').value;
+                const type = document.getElementById('setupRoomType').value;
+                const cap = document.getElementById('setupRoomCapacity').value;
+
+                const res = store.addRoom({ id, name, type, isComputerLab: type === 'lab' && (id.toUpperCase().startsWith('CL') || id.includes('COMP')), capacity: cap });
+                if (res.success) {
+                    showToast(`Room "${res.room.name}" (${res.room.id}) registered!`, 'success');
+                    formSetupAddRoom.reset();
+                    renderSetupModalTables();
+                    updateFilterOptions();
+                    renderActiveView();
+                } else {
+                    showToast(res.error, 'error');
+                }
+            });
+        }
+
+        // Delegation for Table Classes action buttons (Remove batch, Add batch, Delete division)
+        const tableClasses = document.getElementById('tableClasses');
+        if (tableClasses) {
+            tableClasses.addEventListener('click', (e) => {
+                const btnTagRemove = e.target.closest('.btn-tag-remove');
+                if (btnTagRemove) {
+                    const divId = btnTagRemove.dataset.div;
+                    const batchCode = btnTagRemove.dataset.batch;
+                    if (confirm(`Remove batch "${batchCode}" from division ${divId}?`)) {
+                        store.removeBatchFromClass(divId, batchCode);
+                        renderSetupModalTables();
+                        updateFilterOptions();
+                        renderActiveView();
+                        showToast(`Batch "${batchCode}" removed from ${divId}.`, 'info');
+                    }
+                    return;
+                }
+
+                const btnTagAdd = e.target.closest('.btn-tag-add');
+                if (btnTagAdd) {
+                    const divId = btnTagAdd.dataset.div;
+                    const code = prompt(`Enter new batch code for division ${divId} (e.g. J1, E5):`);
+                    if (code && code.trim()) {
+                        const res = store.addBatchToClass(divId, code.trim());
+                        if (res.success) {
+                            renderSetupModalTables();
+                            updateFilterOptions();
+                            renderActiveView();
+                            showToast(`Batch "${res.batch}" added to ${divId}!`, 'success');
+                        } else {
+                            showToast(res.error, 'error');
+                        }
+                    }
+                    return;
+                }
+
+                const btnDelDiv = e.target.closest('.btn-del-div');
+                if (btnDelDiv) {
+                    const divId = btnDelDiv.dataset.div;
+                    if (confirm(`Are you sure you want to delete division ${divId}? All timetable schedule slots for this division will be cleared.`)) {
+                        const res = store.deleteClass(divId);
+                        if (res.success) {
+                            renderSetupModalTables();
+                            updateFilterOptions();
+                            renderActiveView();
+                            showToast(`Division "${divId}" deleted.`, 'info');
+                        } else {
+                            showToast(res.error, 'error');
+                        }
+                    }
+                    return;
+                }
+            });
+        }
+
+        // Delegation for Table Rooms action buttons (Delete room)
+        const tableRooms = document.getElementById('tableRooms');
+        if (tableRooms) {
+            tableRooms.addEventListener('click', (e) => {
+                const btnDelRoom = e.target.closest('.btn-del-room');
+                if (btnDelRoom) {
+                    const roomId = btnDelRoom.dataset.room;
+                    if (confirm(`Are you sure you want to delete room "${roomId}"?`)) {
+                        const res = store.deleteRoom(roomId);
+                        if (res.success) {
+                            renderSetupModalTables();
+                            updateFilterOptions();
+                            renderActiveView();
+                            showToast(`Room "${roomId}" deleted.`, 'info');
+                        } else {
+                            showToast(res.error, 'error');
+                        }
+                    }
+                }
+            });
+        }
+
+        // Delegation for Table Teachers action buttons (Delete teacher)
+        const tableTeachers = document.getElementById('tableTeachers');
+        if (tableTeachers) {
+            tableTeachers.addEventListener('click', (e) => {
+                const btnDelTeacher = e.target.closest('.btn-del-teacher');
+                if (btnDelTeacher) {
+                    const tId = btnDelTeacher.dataset.teacherId;
+                    const tName = btnDelTeacher.dataset.teacherName;
+                    if (confirm(`Are you sure you want to delete faculty member "${tName}"?`)) {
+                        const res = store.deleteTeacher(tId);
+                        if (res.success) {
+                            renderSetupModalTables();
+                            updateFilterOptions();
+                            renderActiveView();
+                            showToast(`Faculty member "${tName}" deleted.`, 'info');
+                        } else {
+                            showToast(res.error, 'error');
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // ----------------------------------------------------------------------
+    // ADD INPUT MODAL HELPERS
+    // ----------------------------------------------------------------------
+    function openAddInputModal(defaultTab = 'tabAddDivision', subMode = 'manual') {
+        // Populate classroom options in Add Division tab
+        const selectClassroom = document.getElementById('selectModalDivClassroom');
+        if (selectClassroom) {
+            selectClassroom.innerHTML = '';
+            store.data.rooms.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = `${r.name} (${r.type.toUpperCase()})`;
+                selectClassroom.appendChild(opt);
+            });
+        }
+
+        // Populate division options in Add Batch tab
+        const selectDivForBatch = document.getElementById('selectModalBatchDivision');
+        if (selectDivForBatch) {
+            selectDivForBatch.innerHTML = '';
+            store.data.classes.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${c.name} (${(c.batches || []).length} batches)`;
+                selectDivForBatch.appendChild(opt);
+            });
+            updateModalBatchDivisionSummary();
+        }
+
+        // Faculty Sub-Mode setup
+        if (defaultTab === 'tabAddTeacher') {
+            if (subMode === 'excel') {
+                if (btnFacultyModeExcel) btnFacultyModeExcel.classList.add('active');
+                if (btnFacultyModeManual) btnFacultyModeManual.classList.remove('active');
+                if (panelTeacherManual) panelTeacherManual.style.display = 'none';
+                if (panelTeacherExcel) panelTeacherExcel.style.display = 'flex';
+            } else {
+                if (btnFacultyModeManual) btnFacultyModeManual.classList.add('active');
+                if (btnFacultyModeExcel) btnFacultyModeExcel.classList.remove('active');
+                if (panelTeacherManual) panelTeacherManual.style.display = 'block';
+                if (panelTeacherExcel) panelTeacherExcel.style.display = 'none';
+            }
+        }
+
+        // Set active tab
+        addInputTabs.forEach(t => {
+            if (t.dataset.tab === defaultTab) {
+                t.classList.add('active');
+            } else {
+                t.classList.remove('active');
+            }
+        });
+        document.querySelectorAll('#modalAddInput .tab-content').forEach(c => {
+            if (c.id === defaultTab) {
+                c.classList.add('active');
+            } else {
+                c.classList.remove('active');
+            }
+        });
+
+        modalAddInput.classList.add('active');
+    }
+
+    function updateModalBatchDivisionSummary() {
+        const selectDiv = document.getElementById('selectModalBatchDivision');
+        const targetDivId = selectDiv ? selectDiv.value : null;
+        const currentListSpan = document.getElementById('modalBatchCurrentList');
+        if (!targetDivId || !currentListSpan) return;
+        const cls = store.getClass(targetDivId);
+        if (cls) {
+            currentListSpan.textContent = (cls.batches && cls.batches.length > 0) ? cls.batches.join(', ') : 'No batches registered yet';
         }
     }
 
@@ -203,21 +786,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = `${c.name} (${c.classroom})`;
                 selectFilter.appendChild(opt);
             });
-            selectedFilterId = data.classes.some(c => c.id === selectedFilterId) ? selectedFilterId : data.classes[0].id;
+            selectedFilterId = data.classes.some(c => c.id === selectedFilterId) ? selectedFilterId : (data.classes[0] ? data.classes[0].id : '');
             selectFilter.value = selectedFilterId;
 
         } else if (activeView === 'batch') {
             filterGroup.style.display = 'flex';
             filterLabel.textContent = 'Select Batch:';
+            let firstBatchKey = '';
             data.classes.forEach(c => {
-                c.batches.forEach(b => {
+                (c.batches || []).forEach(b => {
                     const opt = document.createElement('option');
-                    opt.value = `${c.id}_${b}`;
+                    const key = `${c.id}_${b}`;
+                    opt.value = key;
                     opt.textContent = `${c.name} • Batch ${b}`;
                     selectFilter.appendChild(opt);
+                    if (!firstBatchKey) firstBatchKey = key;
                 });
             });
-            if (!selectedFilterId.includes('_')) selectedFilterId = 'SE-1_E1';
+            const allBatchOptions = Array.from(selectFilter.options).map(o => o.value);
+            if (!allBatchOptions.includes(selectedFilterId)) {
+                selectedFilterId = firstBatchKey || 'SE-1_E1';
+            }
             selectFilter.value = selectedFilterId;
 
         } else if (activeView === 'teacher') {
@@ -230,7 +819,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = `${t.name} (${hours}/${t.maxHoursPerWeek} hrs)`;
                 selectFilter.appendChild(opt);
             });
-            selectedFilterId = data.teachers.some(t => t.name === selectedFilterId) ? selectedFilterId : data.teachers[0].name;
+            selectedFilterId = data.teachers.some(t => t.name === selectedFilterId) ? selectedFilterId : (data.teachers[0] ? data.teachers[0].name : '');
             selectFilter.value = selectedFilterId;
 
         } else if (activeView === 'room') {
@@ -242,7 +831,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.textContent = `${r.name} [${r.type.toUpperCase()}]`;
                 selectFilter.appendChild(opt);
             });
-            selectedFilterId = data.rooms.some(r => r.id === selectedFilterId) ? selectedFilterId : data.rooms[0].id;
+            selectedFilterId = data.rooms.some(r => r.id === selectedFilterId) ? selectedFilterId : (data.rooms[0] ? data.rooms[0].id : '');
             selectFilter.value = selectedFilterId;
 
         } else if (activeView === 'allocator' || activeView === 'master' || activeView === 'audit') {
@@ -278,7 +867,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // ----------------------------------------------------------------------
     function renderClassView() {
         const cls = store.getClass(selectedFilterId);
-        if (!cls) return;
+        if (!cls) {
+            if (store.data.classes.length > 0) {
+                selectedFilterId = store.data.classes[0].id;
+                return renderClassView();
+            }
+            timetableContainer.innerHTML = '<div style="padding:2.5rem; text-align:center; color:var(--text-secondary); background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-subtle);"><h3 style="color:var(--text-accent); margin-bottom:0.5rem;">No Divisions Registered</h3><p>Please add a division using the <strong>+ Add Input</strong> button in the top bar.</p></div>';
+            return;
+        }
 
         const schedule = store.data.schedule;
         const days = store.data.days;
@@ -378,9 +974,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. INDIVIDUAL BATCH VIEW (Student View e.g. SE-1 E1)
     // ----------------------------------------------------------------------
     function renderBatchView() {
-        const [divId, bCode] = selectedFilterId.split('_');
+        if (!selectedFilterId || !selectedFilterId.includes('_')) {
+            const firstCls = store.data.classes[0];
+            if (firstCls && firstCls.batches && firstCls.batches.length > 0) {
+                selectedFilterId = `${firstCls.id}_${firstCls.batches[0]}`;
+            }
+        }
+        const [divId, bCode] = (selectedFilterId || '').split('_');
         const cls = store.getClass(divId);
-        if (!cls) return;
+        if (!cls || !bCode) {
+            timetableContainer.innerHTML = '<div style="padding:2.5rem; text-align:center; color:var(--text-secondary); background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-subtle);"><h3 style="color:var(--text-accent); margin-bottom:0.5rem;">No Batches Available</h3><p>Please add a division and lab batches using the <strong>+ Add Input</strong> button in the top bar.</p></div>';
+            return;
+        }
 
         const schedule = store.data.schedule;
         const days = store.data.days;
@@ -469,8 +1074,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. TEACHER SCHEDULE VIEW
     // ----------------------------------------------------------------------
     function renderTeacherView() {
-        const teacher = store.getTeacher(selectedFilterId);
-        if (!teacher) return;
+        let teacher = store.getTeacher(selectedFilterId);
+        if (!teacher) {
+            if (store.data.teachers.length > 0) {
+                selectedFilterId = store.data.teachers[0].name;
+                teacher = store.data.teachers[0];
+            } else {
+                timetableContainer.innerHTML = '<div style="padding:2.5rem; text-align:center; color:var(--text-secondary); background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-subtle);"><h3 style="color:var(--text-accent); margin-bottom:0.5rem;">No Faculty Members Registered</h3><p>Please add faculty members using the <strong>+ Add Input</strong> button in the top bar or via Excel upload.</p></div>';
+                return;
+            }
+        }
 
         const scheduledHours = store.getTeacherScheduledHours(teacher.id);
         const maxHours = teacher.maxHoursPerWeek || 18;
@@ -685,13 +1298,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <div class="stat-metric-card">
                         <span class="stat-metric-label">Divisions & Batches</span>
-                        <span class="stat-metric-value">4 <span style="font-size:1rem; color:var(--text-secondary);">Div / 16 Batches</span></span>
+                        <span class="stat-metric-value">${store.data.classes.length} <span style="font-size:1rem; color:var(--text-secondary);">Div / ${store.data.classes.reduce((sum, c) => sum + (c.batches ? c.batches.length : 0), 0)} Batches</span></span>
                     </div>
                 </div>
 
                 <div class="subject-allocation-grid">
         `;
 
+        const totalBatchesCount = store.data.classes.reduce((sum, c) => sum + (c.batches ? c.batches.length : 0), 0);
         subjects.forEach(subj => {
             const sStat = store.getSubjectAllocationStats(subj.code);
             const isLab = subj.type === 'lab';
@@ -713,7 +1327,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div>
                         <div class="subject-name-text">${subj.name}</div>
                         <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">
-                            ${isLab ? `${subj.weeklyHours} hrs/week per batch (16 batches total)` : `${subj.weeklyHours} hrs/week per division (4 divisions)`}
+                            ${isLab ? `${subj.weeklyHours} hrs/week per batch (${totalBatchesCount} batches total)` : `${subj.weeklyHours} hrs/week per division (${store.data.classes.length} divisions)`}
                         </div>
                     </div>
 
@@ -763,8 +1377,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = `
             <div style="display:flex; flex-direction:column; gap:2rem;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h2 style="font-size: 1.25rem; font-weight:800;">Master Department Timetable Matrix (Synchronized SE-1 to SE-4)</h2>
-                    <span style="font-size:0.8rem; color:var(--text-secondary);">4 Divisions • 16 Parallel Batches</span>
+                    <h2 style="font-size: 1.25rem; font-weight:800;">Master Department Timetable Matrix (${classes.map(c => c.id).join(', ')})</h2>
+                    <span style="font-size:0.8rem; color:var(--text-secondary);">${classes.length} Divisions • ${classes.reduce((sum, c) => sum + (c.batches ? c.batches.length : 0), 0)} Parallel Batches</span>
                 </div>
         `;
 
@@ -926,8 +1540,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         if (targetSubject) allocSubject.value = targetSubject;
 
-        // Class dropdown
-        allocClass.value = targetClass;
+        // Class dropdown - dynamically populated
+        allocClass.innerHTML = '';
+        store.data.classes.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = `${c.name} (${c.classroom})`;
+            allocClass.appendChild(opt);
+        });
+        if (targetClass && store.getClass(targetClass)) {
+            allocClass.value = targetClass;
+        } else if (store.data.classes.length > 0) {
+            allocClass.value = store.data.classes[0].id;
+        }
 
         // Update batches
         updatePredictorBatches();
@@ -1045,9 +1670,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${t.maxHoursPerWeek} hrs/week</td>
                 <td><span style="font-weight:700; color:${hours > t.maxHoursPerWeek ? 'var(--rose)' : 'var(--emerald)'};">${hours} hrs</span></td>
                 <td><span style="font-size:0.75rem; color:var(--text-secondary);">${[...t.theorySubjects, ...t.labSubjects].join(', ')}</span></td>
+                <td>
+                    <button class="btn-table-del btn-del-teacher" data-teacher-id="${t.id}" data-teacher-name="${t.name}" title="Delete faculty member ${t.name}">
+                        🗑️ Delete
+                    </button>
+                </td>
             `;
             tbTeachers.appendChild(tr);
         });
+
+        const teacherCountDisplay = document.getElementById('teacherCountDisplay');
+        if (teacherCountDisplay) {
+            teacherCountDisplay.textContent = `${data.teachers.length} Faculty Members`;
+        }
 
         // Subjects Table
         const tbSubjects = document.querySelector('#tableSubjects tbody');
@@ -1071,11 +1706,33 @@ document.addEventListener('DOMContentLoaded', () => {
         tbClasses.innerHTML = '';
         data.classes.forEach(c => {
             const tr = document.createElement('tr');
+            const batchesHtml = (c.batches || []).map(b => `
+                <span class="batch-tag-removable">
+                    ${b}
+                    <button class="btn-tag-remove" data-div="${c.id}" data-batch="${b}" title="Remove batch ${b}">&times;</button>
+                </span>
+            `).join('');
+
             tr.innerHTML = `
-                <td><strong>${c.name}</strong></td>
-                <td>${c.classroom}</td>
-                <td>${c.batches.join(', ')}</td>
-                <td>~75 Students</td>
+                <td>
+                    <strong>${c.name}</strong>
+                    <div style="font-size:0.7rem; color:var(--text-accent); font-family:var(--font-mono);">${c.id}</div>
+                </td>
+                <td>
+                    <span class="badge-tag th" style="font-size:0.75rem;">${c.classroom}</span>
+                </td>
+                <td>
+                    <div class="batch-chip-list">
+                        ${batchesHtml}
+                        <button class="btn-tag-add" data-div="${c.id}" title="Add batch to ${c.name}">+ Batch</button>
+                    </div>
+                </td>
+                <td>~${c.capacity || 75} Students</td>
+                <td>
+                    <button class="btn-table-del btn-del-div" data-div="${c.id}" title="Delete division ${c.name}">
+                        🗑️ Delete
+                    </button>
+                </td>
             `;
             tbClasses.appendChild(tr);
         });
@@ -1086,10 +1743,18 @@ document.addEventListener('DOMContentLoaded', () => {
         data.rooms.forEach(r => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-                <td><strong>${r.name}</strong></td>
-                <td><span class="badge-tag ${r.type === 'lab' ? 'lab' : 'th'}">${r.type}</span></td>
-                <td>${r.isComputerLab ? '✅ Yes (DSL/COAL)' : 'No'}</td>
+                <td>
+                    <strong>${r.name}</strong>
+                    <div style="font-size:0.7rem; color:var(--text-accent); font-family:var(--font-mono);">${r.id}</div>
+                </td>
+                <td><span class="badge-tag ${r.type === 'lab' ? 'lab' : 'th'}">${r.type.toUpperCase()}</span></td>
+                <td>${r.isComputerLab ? '💻 Yes (DSL/COAL)' : 'No'}</td>
                 <td>${r.capacity} Capacity</td>
+                <td>
+                    <button class="btn-table-del btn-del-room" data-room="${r.id}" title="Delete room ${r.id}">
+                        🗑️ Delete
+                    </button>
+                </td>
             `;
             tbRooms.appendChild(tr);
         });
@@ -1138,6 +1803,225 @@ document.addEventListener('DOMContentLoaded', () => {
         link.download = "PICT_Timetable_Backup.json";
         link.click();
         showToast("JSON timetable backup downloaded!", "success");
+    }
+
+    function exportExcel() {
+        if (typeof XLSX === 'undefined') {
+            exportCSV();
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+        const schedule = store.data.schedule;
+        const days = store.data.days;
+        const classes = store.data.classes;
+        const teachers = store.data.teachers;
+        const rooms = store.data.rooms;
+
+        // Sheet 1: Master Schedule
+        const schedRows = [
+            ['Division', 'Day', 'Slot', 'Time', 'Session Type', 'Subject Code', 'Subject Name', 'Faculty Name', 'Room', 'Batches']
+        ];
+        const times = ['10:00-11:00', '11:00-12:00', '12:45-01:45', '01:45-02:45', '03:00-04:00', '04:00-05:00'];
+        classes.forEach(c => {
+            days.forEach((day, dIdx) => {
+                for (let s = 1; s <= 6; s++) {
+                    const sess = schedule && schedule[dIdx] && schedule[dIdx][s] ? schedule[dIdx][s][c.id] : null;
+                    const slotTime = times[s - 1] || `Slot ${s}`;
+                    if (!sess) {
+                        schedRows.push([c.name, day, s, slotTime, 'Free', '-', '-', '-', '-', '-']);
+                    } else if (sess.type === 'lecture') {
+                        schedRows.push([c.name, day, s, slotTime, 'Theory Lecture', sess.subjectCode, sess.subjectName, sess.teacherName, sess.roomNumber, 'Entire Division']);
+                    } else if (sess.type === 'lab' && sess.batches) {
+                        for (const b in sess.batches) {
+                            const bData = sess.batches[b];
+                            schedRows.push([c.name, day, s, slotTime, 'Lab Practical', bData.subjectCode, bData.subjectName, bData.teacherName, bData.roomNumber, `Batch ${b}`]);
+                        }
+                    }
+                }
+            });
+        });
+        const wsSched = XLSX.utils.aoa_to_sheet(schedRows);
+        XLSX.utils.book_append_sheet(wb, wsSched, 'Master_Schedule');
+
+        // Sheet 2: Faculty Workload
+        const teacherRows = [
+            ['Faculty ID', 'Faculty Name', 'Designation', 'Max Cap (hrs/week)', 'Scheduled Hours', 'Workload Status', 'Theory Qualified', 'Labs Qualified']
+        ];
+        teachers.forEach(t => {
+            const desig = store.getDesignation(t.designationId);
+            const hrs = store.getTeacherScheduledHours(t.id);
+            const status = hrs > t.maxHoursPerWeek ? 'Overloaded' : (hrs === t.maxHoursPerWeek ? 'Optimal (100%)' : 'Under Quota');
+            teacherRows.push([
+                t.id,
+                t.name,
+                desig ? desig.name : 'Faculty',
+                t.maxHoursPerWeek,
+                hrs,
+                status,
+                (t.theorySubjects || []).join(', '),
+                (t.labSubjects || []).join(', ')
+            ]);
+        });
+        const wsTeachers = XLSX.utils.aoa_to_sheet(teacherRows);
+        XLSX.utils.book_append_sheet(wb, wsTeachers, 'Faculty_Workload');
+
+        // Sheet 3: Divisions & Batches
+        const divRows = [
+            ['Division ID', 'Division Name', 'Default Classroom', 'Lab Batches', 'Student Capacity']
+        ];
+        classes.forEach(c => {
+            divRows.push([
+                c.id,
+                c.name,
+                c.classroom,
+                (c.batches || []).join(', '),
+                c.capacity || 75
+            ]);
+        });
+        const wsDivs = XLSX.utils.aoa_to_sheet(divRows);
+        XLSX.utils.book_append_sheet(wb, wsDivs, 'Divisions_Batches');
+
+        // Sheet 4: Classrooms & Labs
+        const roomRows = [
+            ['Room Code', 'Room Name', 'Room Type', 'Computer Lab?', 'Capacity']
+        ];
+        rooms.forEach(r => {
+            roomRows.push([
+                r.id,
+                r.name,
+                r.type.toUpperCase(),
+                r.isComputerLab ? 'Yes' : 'No',
+                r.capacity
+            ]);
+        });
+        const wsRooms = XLSX.utils.aoa_to_sheet(roomRows);
+        XLSX.utils.book_append_sheet(wb, wsRooms, 'Classrooms_Labs');
+
+        XLSX.writeFile(wb, 'PICT_Department_Timetable_Complete.xlsx');
+        showToast('Comprehensive Excel workbook (.xlsx) downloaded with all 4 sheets!', 'success');
+    }
+
+    // ----------------------------------------------------------------------
+    // FACULTY EXCEL IMPORT & TEMPLATE GENERATION
+    // ----------------------------------------------------------------------
+    function downloadTeacherTemplate() {
+        if (typeof XLSX === 'undefined') {
+            const csv = 'Faculty Name,Designation,Max Hours,Theory Subjects,Lab Subjects,Faculty ID\n' +
+                '"Dr. S. K. Sharma","Professor",14,"DS, DM","DSL","t_33"\n' +
+                '"Prof. P. V. Kulkarni","Associate Professor",16,"COA","COAL","t_34"\n' +
+                '"Prof. M. R. Deshmukh","Assistant Professor",18,"MDM","MDMT, FLS","t_35"\n' +
+                '"Prof. A. N. Joshi","Visiting Faculty",12,"UHV","","t_36"\n';
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Faculty_Load_Template.csv';
+            link.click();
+            showToast('Faculty CSV template downloaded!', 'success');
+            return;
+        }
+
+        const wb = XLSX.utils.book_new();
+        const headers = ['Faculty Name', 'Designation', 'Max Hours', 'Theory Subjects', 'Lab Subjects', 'Faculty ID'];
+        const sampleData = [
+            ['Dr. S. K. Sharma', 'Professor', 14, 'DS, DM', 'DSL', 't_33'],
+            ['Prof. P. V. Kulkarni', 'Associate Professor', 16, 'COA', 'COAL', 't_34'],
+            ['Prof. M. R. Deshmukh', 'Assistant Professor', 18, 'MDM', 'MDMT, FLS', 't_35'],
+            ['Prof. A. N. Joshi', 'Visiting Faculty', 12, 'UHV', '', 't_36']
+        ];
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleData]);
+        ws['!cols'] = [
+            { wch: 26 },
+            { wch: 22 },
+            { wch: 12 },
+            { wch: 22 },
+            { wch: 22 },
+            { wch: 14 }
+        ];
+        XLSX.utils.book_append_sheet(wb, ws, 'Faculty_Roster');
+        XLSX.writeFile(wb, 'Faculty_Roster_Template.xlsx');
+        showToast('Faculty Excel template (.xlsx) downloaded!', 'success');
+    }
+
+    function handleFacultyFile(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target.result);
+                let rows = [];
+
+                if (typeof XLSX !== 'undefined') {
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    rows = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+                } else {
+                    const text = new TextDecoder().decode(data);
+                    const lines = text.split(/\r?\n/).filter(Boolean);
+                    if (lines.length > 1) {
+                        const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                        rows = lines.slice(1).map(l => {
+                            const cells = l.split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+                            const obj = {};
+                            headers.forEach((h, i) => obj[h] = cells[i] || '');
+                            return obj;
+                        });
+                    }
+                }
+
+                if (!rows || rows.length === 0) {
+                    showToast('No records found in spreadsheet.', 'error');
+                    return;
+                }
+
+                currentParsedFacultyList = rows;
+                renderExcelPreview(rows);
+            } catch (err) {
+                console.error('Failed to parse Excel file:', err);
+                showToast('Failed to parse spreadsheet file: ' + err.message, 'error');
+            }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function renderExcelPreview(rows) {
+        if (!tableExcelPreview || !excelImportPreviewArea) return;
+        tableExcelPreview.innerHTML = '';
+
+        let validCount = 0;
+        rows.slice(0, 50).forEach(r => {
+            const name = r['Faculty Name'] || r['name'] || r['Name'] || r['Teacher Name'] || r['teacher_name'] || '';
+            if (!name) return;
+            validCount++;
+
+            const desig = r['Designation'] || r['Post'] || r['designation'] || (name.startsWith('Dr.') ? 'Professor' : 'Assistant Professor');
+            const hours = r['Max Hours'] || r['Total Load'] || r['total_load'] || r['Hours'] || 18;
+            const theory = r['Theory Subjects'] || r['Theory'] || r['theory_subjects'] || '-';
+            const labs = r['Lab Subjects'] || r['Labs'] || r['lab_subjects'] || '-';
+            const exists = store.data.teachers.some(t => t.name.toLowerCase() === name.toLowerCase());
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${name}</strong></td>
+                <td>${desig}</td>
+                <td>${hours} hrs</td>
+                <td><span style="font-size:0.75rem; color:var(--text-secondary);">${theory}</span></td>
+                <td><span style="font-size:0.75rem; color:var(--text-secondary);">${labs}</span></td>
+                <td>
+                    <span class="badge-tag ${exists ? 'th' : 'lab'}" style="font-size:0.7rem;">
+                        ${exists ? 'Existing (Update)' : 'New Faculty'}
+                    </span>
+                </td>
+            `;
+            tableExcelPreview.appendChild(tr);
+        });
+
+        if (excelParsedCount) {
+            excelParsedCount.textContent = rows.length;
+        }
+        excelImportPreviewArea.style.display = 'flex';
+        showToast(`Parsed ${rows.length} rows from spreadsheet! Review and click Confirm.`, 'info');
     }
 
     // ----------------------------------------------------------------------

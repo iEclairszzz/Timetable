@@ -211,7 +211,8 @@ class TimetablePredictor {
         let targetRoom = roomId;
         if (!targetRoom) {
             if (!isLab) {
-                targetRoom = classId === 'SE-1' ? 'CR-101' : (classId === 'SE-2' ? 'CR-102' : (classId === 'SE-3' ? 'CR-103' : 'CR-104'));
+                const targetCls = this.store.getClass(classId);
+                targetRoom = (targetCls && targetCls.classroom) ? targetCls.classroom : 'CR-101';
             } else if (['DSL', 'COAL'].includes(subjectCode)) {
                 targetRoom = 'CL-1';
             } else if (subjectCode === 'FLS') {
@@ -221,7 +222,7 @@ class TimetablePredictor {
             } else if (subjectCode === 'PDCR') {
                 targetRoom = 'LAB-PDCR';
             } else {
-                targetRoom = 'TUT-ROOM';
+                targetRoom = 'TR-101';
             }
         }
 
@@ -246,7 +247,8 @@ class TimetablePredictor {
             schedule[dayIdx][slotIdx][classId] = lectureObj;
         } else {
             // Lab Session
-            const targetBatch = batchCode || `${classId.split('-')[1]}1`; // fallback
+            const clsObj = this.store.getClass(classId);
+            const targetBatch = batchCode || (clsObj && clsObj.batches && clsObj.batches[0]) || (classId.includes('-') ? `${classId.split('-')[1]}1` : 'B1');
             for (let offset = 0; offset < span; offset++) {
                 const s = slotIdx + offset;
                 schedule[dayIdx][s] = schedule[dayIdx][s] || {};

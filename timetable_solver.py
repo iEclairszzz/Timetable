@@ -26,12 +26,15 @@ class TimetableSolver:
     # 2-hour lab start slots: 0 (10:00-12:00), 2 (12:45-02:45), 4 (03:00-05:00)
     LAB_START_SLOTS = [0, 2, 4]
 
-    def __init__(self, subjects_csv='subjects.csv', load_allocation_file='load_allocation_se_2026_27.csv'):
+    def __init__(self, subjects_csv='subjects.csv', load_allocation_file='load_allocation_se_2026_27.csv', divisions=None, batch_names=None, classrooms=None):
         self.subjects_csv = subjects_csv
         self.load_allocation_file = load_allocation_file
         
-        self.divisions = ['SE-1', 'SE-2', 'SE-3', 'SE-4']
-        self.batch_names = ['E', 'F', 'G', 'H']
+        self.divisions = list(divisions) if divisions is not None else ['SE-1', 'SE-2', 'SE-3', 'SE-4']
+        self.batch_names = list(batch_names) if batch_names is not None else ['E', 'F', 'G', 'H']
+        self.classrooms = classrooms if classrooms is not None else {
+            div: f"CR-10{i+1}" for i, div in enumerate(self.divisions)
+        }
         
         self.subjects = {} # code -> {name, type, hours}
         self.teachers = {} # teacher_name -> details
@@ -446,7 +449,30 @@ class TimetableSolver:
         print(f"Exported Markdown timetable to {output_path}")
 
 if __name__ == '__main__':
-    solver = TimetableSolver()
+    import argparse
+    parser = argparse.ArgumentParser(description="Constraint Programming Timetable Solver with custom inputs")
+    parser.add_argument('--divisions', type=str, default='SE-1,SE-2,SE-3,SE-4', help="Comma-separated division IDs (e.g. SE-1,SE-2,SE-3,SE-4)")
+    parser.add_argument('--batches', type=str, default='E,F,G,H', help="Comma-separated batch letters (e.g. E,F,G,H)")
+    parser.add_argument('--classrooms', type=str, default='', help="Optional classroom mapping (e.g. SE-1:CR-101,SE-2:CR-102)")
+    parser.add_argument('--teachers-file', type=str, default='load_allocation_se_2026_27.csv', help="Path to teacher load allocation file (.xlsx, .csv, or .docx)")
+    args = parser.parse_args()
+
+    div_list = [d.strip() for d in args.divisions.split(',') if d.strip()]
+    batch_list = [b.strip() for b in args.batches.split(',') if b.strip()]
+    room_map = None
+    if args.classrooms:
+        room_map = {}
+        for item in args.classrooms.split(','):
+            if ':' in item:
+                d, r = item.split(':', 1)
+                room_map[d.strip()] = r.strip()
+
+    solver = TimetableSolver(
+        load_allocation_file=args.teachers_file,
+        divisions=div_list,
+        batch_names=batch_list,
+        classrooms=room_map
+    )
     result = solver.solve()
     if result:
         solver.print_ascii_table(result)

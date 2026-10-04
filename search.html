@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timetable Search Portal - ChronoDept</title>
+    <meta name="description" content="Dedicated department timetable search page for faculty schedules, subjects, syllabus allocation, batch timetables, and classroom occupancy.">
+
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="search-page-body">
+    <div class="app-container">
+        <!-- Search Page Header -->
+        <header class="app-header search-header">
+            <div class="brand">
+                <a href="index.html" class="brand-link" title="Return to ChronoDept Main Timetable">
+                    <div class="brand-icon">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                            <circle cx="8" cy="15" r="1"></circle>
+                            <circle cx="12" cy="15" r="1"></circle>
+                            <circle cx="16" cy="15" r="1"></circle>
+                        </svg>
+                    </div>
+                </a>
+                <div>
+                    <h1 class="app-title">
+                        <a href="index.html" style="text-decoration:none; color:inherit;">ChronoDept</a>
+                        <span class="app-version-badge" style="background:var(--primary-light); color:var(--text-accent); border-color:var(--border-glow);">SEARCH PORTAL</span>
+                    </h1>
+                    <p class="app-subtitle">Pune Institute of Computer Technology • Universal Timetable Search Engine</p>
+                </div>
+            </div>
+
+            <!-- Header Quick Actions -->
+            <div class="header-actions">
+                <a href="index.html" class="btn btn-primary" title="Return to Interactive Timetable Grid">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+                    Back to Timetable Grid
+                </a>
+                <button id="btnPrintSearch" class="btn btn-outline" title="Print search results or export clean PDF">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                    Print Results / PDF
+                </button>
+                <a href="index.html#setup" class="btn btn-secondary" title="Go to Setup in Timetable">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    Setup
+                </a>
+            </div>
+        </header>
+
+        <!-- Search Hero Section -->
+        <section class="search-hero-section">
+            <div class="search-hero-content">
+                <form id="searchPageForm" class="search-hero-form" action="search.html" method="GET">
+                    <div class="search-hero-input-wrap">
+                        <svg class="search-hero-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input 
+                            type="search" 
+                            id="searchPageInput" 
+                            name="q" 
+                            class="search-hero-input" 
+                            placeholder="Search by faculty, subject (DS, DSL, COA...), division (SE-1..4), batch (E1..H4), room (CL-1, CR-101)..." 
+                            autocomplete="off" 
+                            autofocus
+                        >
+                        <button type="button" id="btnClearSearch" class="search-hero-clear" title="Clear query" style="display: none;">
+                            ✕
+                        </button>
+                        <button type="submit" class="btn btn-primary search-hero-submit">
+                            <span>Search</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                        </button>
+                    </div>
+
+                    <div class="search-options-row">
+                        <div class="search-suggestions-chips">
+                            <span class="suggestions-label">Try searching:</span>
+                            <button type="button" class="suggestion-chip" data-query="Dr. A. G. Phakatkar">👨‍🏫 Dr. Phakatkar</button>
+                            <button type="button" class="suggestion-chip" data-query="DSL">🔬 DSL (Data Structures Lab)</button>
+                            <button type="button" class="suggestion-chip" data-query="COAL">💻 COAL Lab</button>
+                            <button type="button" class="suggestion-chip" data-query="SE-1">🎓 Division SE-1</button>
+                            <button type="button" class="suggestion-chip" data-query="E1">🏷️ Batch E1</button>
+                            <button type="button" class="suggestion-chip" data-query="CL-1">🏫 Computer Lab 1</button>
+                            <button type="button" class="suggestion-chip" data-query="Monday">📅 Monday</button>
+                        </div>
+
+                        <label class="search-checkbox-label">
+                            <input type="checkbox" id="checkNewTab">
+                            <span>Open next search in new tab</span>
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Category Filter Tabs -->
+        <section class="search-filter-section">
+            <div class="search-category-tabs" role="tablist">
+                <button class="search-cat-tab active" data-category="all">
+                    <span>All Results</span>
+                    <span class="cat-count-badge" id="countAll">0</span>
+                </button>
+                <button class="search-cat-tab" data-category="teachers">
+                    <span>👨‍🏫 Faculty</span>
+                    <span class="cat-count-badge" id="countTeachers">0</span>
+                </button>
+                <button class="search-cat-tab" data-category="subjects">
+                    <span>📚 Subjects</span>
+                    <span class="cat-count-badge" id="countSubjects">0</span>
+                </button>
+                <button class="search-cat-tab" data-category="classes">
+                    <span>🎓 Divisions & Batches</span>
+                    <span class="cat-count-badge" id="countClasses">0</span>
+                </button>
+                <button class="search-cat-tab" data-category="rooms">
+                    <span>🏫 Rooms & Labs</span>
+                    <span class="cat-count-badge" id="countRooms">0</span>
+                </button>
+                <button class="search-cat-tab" data-category="sessions">
+                    <span>⏱️ Matching Slots</span>
+                    <span class="cat-count-badge" id="countSessions">0</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Search Meta Summary Bar -->
+        <div id="searchMetaSummary" class="search-meta-container"></div>
+
+        <!-- Dynamic Results Container -->
+        <main id="searchResultsContainer" class="search-results-main">
+            <!-- Populated dynamically by js/search.js -->
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/default_data.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/validator.js"></script>
+    <script src="js/search.js"></script>
+</body>
+</html>
