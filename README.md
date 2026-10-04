@@ -1,51 +1,68 @@
-# Timetable Generator
+# Timetable Generator & Predictor Studio
 
-A Python-based Constraint Programming Timetable Solver for SE Computer Engineering (4 Divisions, 16 Batches). 
-This tool automates the scheduling of theory lectures, labs, and tutorials, enforcing timing rules, lab block alignments, teacher load caps, and specific room capacities (e.g., 7 Computer Labs limit).
+A modern, interactive Web Application and Constraint Programming Timetable Predictor for Pune Institute of Computer Technology (PICT) - Department of Computer Engineering (S.Y. 2026-27 Sem-I, 4 Divisions, 16 Batches).
 
-## Features
-- Generates a non-overlapping timetable for all divisions and batches.
-- Handles teacher load caps and prevents teacher scheduling conflicts.
-- Adheres to specific constraints like parallel lab sessions and computer lab capacity limits.
-- Supports input configuration via CSV and load allocation from DOCX files.
-- Exports results in multiple formats: ASCII table, Excel (`.xlsx`), Word (`.docx`), and Markdown (`.md`).
+Automates the scheduling and predictive allocation of all 12 theory lectures, labs, and tutorials, enforcing timing rules, 2-hour continuous non-split lab blocks, faculty workload caps, and room capacity limits (such as the 7 Computer Labs limit for DSL/COAL).
 
-## Tech Stack
-- **Python 3.x**
-- **ortools**: Constraint Programming (CP-SAT) solver for the core scheduling logic.
-- **pandas**: Data manipulation and export to Excel.
-- **python-docx**: Parsing input and exporting schedules to Word documents.
-- **openpyxl**: Excel writing support.
+---
 
-## Project Structure
-- `timetable_solver.py`: Main solver logic utilizing `ortools.sat.python.cp_model`.
-- `docx_parser.py`: Logic to parse teacher load allocation from DOCX files.
-- `create_load_allocation.py`: Script/utility related to generating load allocations.
-- `subjects.csv`: Input file defining the subjects and their type (Theory/Lab) and hours.
-- `load_allocation_se_2026_27.csv`: Exported load allocation data.
-- Input data files (`.docx`, `.xlsx`, `.pdf`) for timetable specs and allocations.
+## 🚀 Web Application Features
 
-## Installation
+1. **Class View (SE-1 to SE-4)**:
+   - Full timetable grid for each division with color-coded theory lectures and parallel lab session blocks.
+   - 4-Batch Parallel Matrix: shows all 4 batches (e.g. E1, F1, G1, H1) with their respective teachers and lab rooms.
+2. **Individual Batch View**:
+   - Personalized student timetables for any of the 16 batches (E1..H1, E2..H2, E3..H3, E4..H4).
+3. **Teacher Schedule View**:
+   - Complete weekly schedules for all 32+ faculty members with workload meters, weekly caps, and free slot indicators.
+4. **Room & Lab Occupancy View**:
+   - Live occupancy tracking across classrooms (CR-101 to CR-104), Computer Labs (CL-1 to CL-7), Linux Lab, Hardware Lab, and Language Lab.
+5. **Subject Allocator Studio**:
+   - Comprehensive dashboard tracking all 12 subjects (DS, DSL, COA, COAL, MDM, MDMT, DM, UHV, EEFM, CEP, FLS, PDCR).
+   - Real-time progress bars, required vs allocated contact hours, and one-click predictive slot allocation.
+6. **AI / Heuristic Slot Predictor**:
+   - Evaluates any subject/class/batch/teacher and predicts optimal conflict-free time slots scored from 0 to 100 based on student fatigue balance, teacher gap minimization, and lab block alignment.
+7. **Department Conflict Auditor**:
+   - Real-time constraint validation checking for faculty double-booking, room collisions, break-splitting violations, computer lab capacity (>7), and syllabus deficits.
+8. **Export & Print**:
+   - Export to Excel (.xlsx), CSV, clean printable PDF, and JSON backups.
 
-1. Ensure you have Python installed.
-2. Install the required dependencies:
-   ```bash
-   pip install pandas ortools python-docx openpyxl
-   ```
+---
 
-## How to Run
+## 📂 Web App Structure
 
-Execute the main solver script:
+- `index.html`: Main application interface with PICT branding, view navigators, and modals.
+- `styles.css`: Modern glassmorphism dark-theme styling, responsive tables, and print stylesheets.
+- `js/default_data.js`: Verified optimal baseline schedule generated from CP-SAT solver.
+- `js/data.js`: LocalStorage state management and curriculum statistics.
+- `js/validator.js`: Real-time conflict detector and full department auditor.
+- `js/predictor.js`: Intelligent slot predictor and automated subject allocator engine.
+- `js/app.js`: Main UI controller and interaction handlers.
+- `export_web_data.py`: Pipeline connecting python CP-SAT solver solutions to the web application.
+
+---
+
+## 🏃‍♂️ How to Run Locally
+
+### Option 1: Open Directly in Browser
+Simply double-click or open `index.html` in any modern web browser.
+
+### Option 2: Run with Local HTTP Server
+```bash
+# Using Python
+python -m http.server 8080
+
+# Or with Node.js
+npx serve .
+```
+Then visit `http://localhost:8080` in your web browser.
+
+---
+
+## ⚙️ Python CP-SAT Solver (CLI)
+
+The underlying mathematical constraint solver can also be executed directly via Python:
 ```bash
 python timetable_solver.py
 ```
-This will run the CP-SAT solver. If a valid timetable is found, it will print an ASCII table in the console and export the schedule to `.xlsx`, `.docx`, and `.md` formats.
-
-## Configuration / Environment Variables
-
-Currently, the configuration is file-based:
-- **`subjects.csv`**: Defines the curriculum and subject requirements.
-- **`load_allocation_se_2026_27.csv`**: Represents the teacher load requirements.
-- Other parameters like `divisions`, `batch_names`, and `LAB_START_SLOTS` are defined within the `TimetableSolver` class in `timetable_solver.py`.
-
-No specific `.env` file or environment variables are required out of the box.
+Outputs ASCII schedule in console and exports `SE_Timetable_2026_27.xlsx`, `SE_Timetable_2026_27.docx`, and `SE_Timetable_2026_27.md`.
